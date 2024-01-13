@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.settings import Settings
 
-engine = create_engine(Settings.DB_URL)
+engine = create_engine("sqlite:///./app/database/database.db")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
