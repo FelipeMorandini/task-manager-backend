@@ -1,32 +1,27 @@
 from contextlib import asynccontextmanager
 from sqlite3 import OperationalError
 from fastapi import FastAPI
-from app.database.connection import init_db, SessionLocal
+from app.database.connection import close_db_connection, init_db, SessionLocal
 
-
-app = FastAPI()
-
-async def startup():
-    try:
-        print("Application starting...")
-        session = SessionLocal()
-        init_db()
-        print("Database successfully connected. Application running.")
-    except OperationalError as e:
-        raise RuntimeError("Database connection failed.: {e}") from e
-    
-async def shutdown():
-    print("Application shutting down...")
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await startup()
-    yield
-    await shutdown()
 
 app = FastAPI(
     title="Task Manager Backend",
     description="Backend for a Task Management application",
     version="1.0.0",
-    lifespan=lifespan
 )
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="Task Manager Backend",
+        description="Backend for a Task Management application",
+        version="1.0.0",
+    )
+    
+    # app.include_router(router)
+
+    app.add_event_handler("startup", init_db)
+    app.add_event_handler("shutdown", close_db_connection)
+
+    return app
+
+app = create_app()
